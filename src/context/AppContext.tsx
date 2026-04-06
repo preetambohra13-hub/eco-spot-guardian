@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { AppUser, WasteReport, ReportStatus, WasteCategory } from "@/types/app";
 import { toast } from "sonner";
 
+const HOST_PASSWORD = "host@2026";
+const USER_PASSWORD = "user@2026";
+
 interface AppContextType {
   user: AppUser | null;
   reports: WasteReport[];
@@ -10,7 +13,6 @@ interface AppContextType {
   logout: () => void;
   addReport: (report: Omit<WasteReport, "id" | "timestamp" | "status" | "userId" | "userName" | "co2Saved">) => void;
   updateReportStatus: (reportId: string, status: ReportStatus) => void;
-  allUsers: AppUser[];
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -66,11 +68,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const signup = (name: string, email: string, password: string, role: "user" | "host"): boolean => {
     const users = getUsers();
     if (users.find((u) => u.email === email)) {
-      toast.error("इस email से पहले से account है");
+      toast.error("Account already exists with this email");
       return false;
     }
-    if (password.length < 4) {
-      toast.error("Password कम से कम 4 characters का होना चाहिए");
+    // Validate role password
+    if (role === "host" && password !== HOST_PASSWORD) {
+      toast.error("Invalid Host password. Contact admin for access.");
+      return false;
+    }
+    if (role === "user" && password !== USER_PASSWORD) {
+      toast.error("Invalid User password. Use the correct password.");
       return false;
     }
     const newUser: StoredUser = {
@@ -87,7 +94,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     saveUsers([...users, newUser]);
     const { password: _, ...userData } = newUser;
     setUser(userData);
-    toast.success(`Welcome to CleanFuture Hub, ${name}! 🌱`);
+    toast.success(`Welcome to EcoSort, ${name}! 🌱`);
     return true;
   };
 
@@ -95,7 +102,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const users = getUsers();
     const found = users.find((u) => u.email === email && u.password === password);
     if (!found) {
-      toast.error("Email या password गलत है");
+      toast.error("Invalid email or password");
       return false;
     }
     const { password: _, ...userData } = found;
@@ -106,7 +113,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setUser(null);
-    toast.info("Logout हो गया");
+    toast.info("Logged out successfully");
   };
 
   const addReport = (report: Omit<WasteReport, "id" | "timestamp" | "status" | "userId" | "userName" | "co2Saved">) => {
@@ -129,40 +136,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       co2Saved: +(user.co2Saved + co2Saved).toFixed(1),
     };
     setUser(updatedUser);
+    // Update in stored users too
     const users = getUsers();
     const idx = users.findIndex((u) => u.id === user.id);
     if (idx >= 0) {
       users[idx] = { ...users[idx], ...updatedUser };
       saveUsers(users);
     }
-    toast.success("+15 Eco Points! 🌱", { description: "Waste classify और save हो गया।" });
+    toast.success("+15 Eco Points! 🌱", { description: "Waste classified and saved successfully." });
   };
 
   const updateReportStatus = (reportId: string, status: ReportStatus) => {
     setReports((prev) => prev.map((r) => (r.id === reportId ? { ...r, status } : r)));
     if (status === "cleaned") {
-      // Award bonus points to the reporter
-      const report = reports.find((r) => r.id === reportId);
-      if (report) {
-        const users = getUsers();
-        const reporterIdx = users.findIndex((u) => u.id === report.userId);
-        if (reporterIdx >= 0) {
-          users[reporterIdx].points += 50;
-          saveUsers(users);
-        }
-        // If the current user is the reporter, update their state too
-        if (user && user.id === report.userId) {
-          setUser({ ...user, points: user.points + 50 });
-        }
-      }
-      toast.success("🎉 Area Cleaned!", { description: "Reporter को 50 bonus points मिले!" });
+      toast.success("🎉 Spot Cleaned!", { description: "The area has been successfully cleaned!" });
     }
   };
 
-  const allUsers: AppUser[] = getUsers().map(({ password: _, ...u }) => u);
-
   return (
-    <AppContext.Provider value={{ user, reports, login, signup, logout, addReport, updateReportStatus, allUsers }}>
+    <AppContext.Provider value={{ user, reports, login, signup, logout, addReport, updateReportStatus }}>
       {children}
     </AppContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Recycle, User, Shield, ArrowLeft, Mail, Lock, UserCircle } from "lucide-react";
+import { Recycle, User, Shield, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { useApp } from "@/context/AppContext";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"user" | "host">("user");
 
+  // If already logged in, redirect
   if (user) {
     navigate(user.role === "host" ? "/host" : "/dashboard");
     return null;
@@ -33,6 +34,7 @@ const AuthPage = () => {
     }
 
     if (success) {
+      // After login, we need to check role from context - will redirect on re-render
       setTimeout(() => {
         navigate(role === "host" ? "/host" : "/dashboard");
       }, 100);
@@ -62,48 +64,41 @@ const AuthPage = () => {
         </div>
 
         <h1 className="font-display text-2xl font-bold text-center mb-1">
-          {isSignup ? "Account बनाएं" : "Welcome Back"}
+          {isSignup ? "Create Account" : "Welcome Back"}
         </h1>
         <p className="text-muted-foreground text-center text-sm mb-8">
-          {isSignup ? "CleanFuture Hub में join करें और environment बचाएं" : "अपने account में login करें"}
+          {isSignup ? "Join EcoSort and start making a difference" : "Login to your EcoSort account"}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isSignup && (
-            <div className="relative">
-              <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="पूरा नाम (Full Name)"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="rounded-xl py-5 pl-10"
-              />
-            </div>
+            <Input
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="rounded-xl py-5"
+            />
           )}
 
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="email"
-              placeholder="Gmail / Email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl py-5 pl-10"
-            />
-          </div>
+          <Input
+            type="email"
+            placeholder="Email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="rounded-xl py-5"
+          />
 
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div>
             <Input
               type="password"
-              placeholder={isSignup ? "अपना password बनाएं" : "Password डालें"}
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-xl py-5 pl-10"
+              className="rounded-xl py-5"
             />
             {isSignup && (
               <p className="text-xs text-muted-foreground mt-1.5 ml-1">
-                कम से कम 4 characters का password बनाएं
+                User password: <strong>user@2026</strong> | Host password: <strong>host@2026</strong>
               </p>
             )}
           </div>
@@ -111,8 +106,8 @@ const AuthPage = () => {
           {isSignup && (
             <div className="grid grid-cols-2 gap-3">
               {([
-                { value: "user" as const, label: "User / Reporter", icon: User, desc: "कूड़ा report करें, points कमाएं" },
-                { value: "host" as const, label: "Host / Admin", icon: Shield, desc: "Reports manage करें, team भेजें" },
+                { value: "user" as const, label: "Reporter", icon: User, desc: "Classify & earn points" },
+                { value: "host" as const, label: "Host/Admin", icon: Shield, desc: "Manage reports" },
               ]).map((opt) => (
                 <button
                   key={opt.value}
@@ -133,14 +128,14 @@ const AuthPage = () => {
           )}
 
           <Button type="submit" className="w-full bg-primary text-primary-foreground font-semibold py-5 rounded-xl text-base">
-            {isSignup ? "Account बनाएं" : "Sign In"}
+            {isSignup ? "Create Account" : "Sign In"}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          {isSignup ? "पहले से account है?" : "Account नहीं है?"}{" "}
+          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
           <button onClick={() => setIsSignup(!isSignup)} className="text-primary font-semibold hover:underline">
-            {isSignup ? "Sign In करें" : "Sign Up करें"}
+            {isSignup ? "Sign In" : "Sign Up"}
           </button>
         </p>
       </motion.div>
