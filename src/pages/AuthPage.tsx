@@ -96,9 +96,9 @@ const AuthPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="rounded-xl py-5"
             />
-            {isSignup && (
+            {isSignup && role === "user" && (
               <p className="text-xs text-muted-foreground mt-1.5 ml-1">
-                User password: <strong>user@2026</strong> | Host password: <strong>host@2026</strong>
+                Apna password banayein (kuch bhi rakh sakte hain)
               </p>
             )}
           </div>
