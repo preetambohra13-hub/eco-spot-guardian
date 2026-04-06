@@ -71,13 +71,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       toast.error("Account already exists with this email");
       return false;
     }
-    // Validate role password
+    // Host password is fixed and secret - only admin knows it
     if (role === "host" && password !== HOST_PASSWORD) {
       toast.error("Invalid Host password. Contact admin for access.");
-      return false;
-    }
-    if (role === "user" && password !== USER_PASSWORD) {
-      toast.error("Invalid User password. Use the correct password.");
       return false;
     }
     const newUser: StoredUser = {
